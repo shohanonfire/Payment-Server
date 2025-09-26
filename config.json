@@ -1,0 +1,12 @@
+{
+  "a1b2c3d4e5f6": {
+    "amount": "10.00",
+    "createdAt": 169xxxxxxx,
+    "expiresAt": 169xxxxxxx
+  },
+  "custom-id-01": {
+    "amount": "99.00",
+    "createdAt": 169xxxxxxx,
+    "expiresAt": 169xxxxxxx
+  }
+}
