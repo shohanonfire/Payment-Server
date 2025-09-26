@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Generate Payment Link</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Arial;margin:20px;background:#f6f9ff;color:#0b2340}
+    .card{max-width:480px;margin:30px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(2,12,32,.06)}
+    label{display:block;margin-top:10px;color:#334155}
+    input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc;margin-top:6px}
+    button{margin-top:14px;padding:10px 14px;border-radius:8px;border:none;background:#0057d0;color:#fff;font-weight:600;cursor:pointer}
+    .result{margin-top:14px;padding:10px;background:#f1f6ff;border-radius:8px;word-break:break-all}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Generate Payment Link</h2>
+    <label>Amount (BDT)</label>
+    <input id="amount" placeholder="e.g. 99.00" type="text" value="10.00" />
+
+    <label>Expiry (minutes)</label>
+    <input id="expiry" type="number" min="1" value="30" />
+
+    <label>Optional: custom id</label>
+    <input id="customId" placeholder="alphanumeric or leave empty" />
+
+    <button id="genBtn">Generate</button>
+    <div class="result" id="result" style="display:none"></div>
+  </div>
+
+<script>
+  // Same-origin API → no CORS
+  const API = '/api/generate';
+
+  document.getElementById('genBtn').addEventListener('click', async ()=>{
+    const amount = document.getElementById('amount').value.trim();
+    const expiryMinutes = parseInt(document.getElementById('expiry').value, 10) || 30;
+    const customId = document.getElementById('customId').value.trim() || null;
+
+    if (!amount || isNaN(Number(amount))) {
+      alert('Enter valid amount');
+      return;
+    }
+
+    const body = { amount, expiryMinutes };
+    if (customId) body.id = customId;
+
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const j = await res.json();
+      const box = document.getElementById('result');
+      box.style.display='block';
+      if (!res.ok) {
+        box.textContent = 'Error: ' + (j?.error || res.status);
+        return;
+      }
+      box.innerHTML = `<strong>Link:</strong><br>
+        <a href="${j.link}" target="_blank">${j.link}</a><br>
+        <small>Expires at: ${new Date(j.expiresAt).toLocaleString()}</small>`;
+    } catch (e) {
+      // যদি “Network Error” দেখাও, সেটা সাধারণত same-origin না হলে হয়।
+      const box = document.getElementById('result');
+      box.style.display='block';
+      box.textContent = 'Network error: ' + e.message;
+    }
+  });
+</script>
+</body>
+</html>
